@@ -7,7 +7,7 @@ const subscribe = () => {
         brokers: ['panos-Inspiron-7570:9092'],
     })
 
-    const consumer = kafka.consumer({ groupId: "my-consumer-group" })
+    const consumer = kafka.consumer({ groupId: "answers-group" })
 
     const run = async() => {
         await consumer.connect()
