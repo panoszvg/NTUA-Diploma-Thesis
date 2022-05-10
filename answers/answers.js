@@ -1,3 +1,8 @@
+// initialize database
+const sequelize = require("./database");
+var initModels = require("./init-models");
+var models = initModels(sequelize)
+
 let messageKey = 0;
 
 exports.getQuestion = (req, res, next) => {
@@ -10,6 +15,12 @@ exports.postAnswer = (req, res, next) => {
     const answerText = req.body.answer;
 
     if (answerText === '') return res.status(400).json({ message: 'Answer body cannot be empty.', type: 'error' })
+
+    models.Answers.create({
+        text: answerText,
+        dateCreated: Date.now(),
+        QuestionsId: questionId
+    })
 
     const { Kafka } = require('kafkajs');
 
