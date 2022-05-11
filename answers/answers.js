@@ -1,12 +1,26 @@
 // initialize database
 const sequelize = require("./database");
+const Sequelize = require('sequelize')
 var initModels = require("./init-models");
 var models = initModels(sequelize)
 
 let messageKey = 0;
 
 exports.getQuestion = (req, res, next) => {
-    res.status(200).json({ message: 'OK', type: 'Success' });
+
+    let questionId = req.params.id;
+
+    models.Questions.findAll({
+        where: {
+            id: {
+                [Sequelize.Op.eq]: questionId
+            }
+        }
+    }).then(row => {
+        console.log(row)
+        if (row.length == 0) return res.status(404).json({ message: 'Question Not Found.', type: 'error' });
+        else res.status(200).json(row[0]);
+    })
 }
 
 exports.postAnswer = (req, res, next) => {
