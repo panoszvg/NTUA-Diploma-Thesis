@@ -34,7 +34,7 @@ const subscribe = () => {
                         answers: null
                     })
                 } else if (topic == "ANSWER") {
-
+                    models.Questions.update({ 'answers': sequelize.fn('array_append', sequelize.col('answers'), jsonMessage.answerId) }, { where: { id: jsonMessage.questionId } })
                 }
             }
         })
