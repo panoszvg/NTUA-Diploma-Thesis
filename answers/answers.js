@@ -20,28 +20,34 @@ exports.postAnswer = (req, res, next) => {
         text: answerText,
         dateCreated: Date.now(),
         QuestionsId: questionId
-    })
+    }).then(insertedAnswer => {
 
-    const { Kafka } = require('kafkajs');
+        const { Kafka } = require('kafkajs');
 
-    const kafka = new Kafka({
-        clientId: "answers",
-        brokers: ['panos-Inspiron-7570:9092'],
-    })
-
-    const producer = kafka.producer();
-
-    console.log(JSON.stringify(req.body))
-    const run = async() => {
-        await producer.connect();
-        await producer.send({
-            topic: "ANSWER",
-            messages: [{ key: messageKey.toString(), value: JSON.stringify(req.body) }]
+        const kafka = new Kafka({
+            clientId: "answers",
+            brokers: ['panos-Inspiron-7570:9092'],
         })
-        messageKey++;
-    }
 
-    run().catch(e => console.error(`[kafka-producer] ${e.message}`, e));
+        const producer = kafka.producer();
+
+        let kafkaMessage = {
+            answer: answerText,
+            questionId: questionId,
+            answerId: insertedAnswer.id
+        }
+
+        const run = async() => {
+            await producer.connect();
+            await producer.send({
+                topic: "ANSWER",
+                messages: [{ key: messageKey.toString(), value: JSON.stringify(kafkaMessage) }]
+            })
+            messageKey++;
+        }
+
+        run().catch(e => console.error(`[kafka-producer] ${e.message}`, e));
+    })
 
     res.status(200).json({ message: 'OK', type: 'Success' });
 }
