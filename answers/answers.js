@@ -17,9 +17,24 @@ exports.getQuestion = (req, res, next) => {
             }
         }
     }).then(row => {
-        console.log(row)
         if (row.length == 0) return res.status(404).json({ message: 'Question Not Found.', type: 'error' });
-        else res.status(200).json(row[0]);
+        else {
+            let returnResult = { question: row[0] };
+            models.Answers.findAll({
+                where: {
+                    QuestionsId: {
+                        [Sequelize.Op.eq]: questionId
+                    }
+                }
+            }).then(rows => {
+                returnResult.answers = [];
+                if (rows)
+                    rows.forEach((row, index) => {
+                        returnResult.answers.push(row);
+                    })
+                return res.status(200).json(returnResult);
+            })
+        }
     })
 }
 
