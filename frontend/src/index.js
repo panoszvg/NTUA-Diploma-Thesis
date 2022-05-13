@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import Navbar from './Navbar';
 import QuestionForm from './QuestionForm';
+import QuestionCardList from './QuestionCard';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -12,7 +13,7 @@ root.render(
         <Navbar/>
         <Routes>
             <Route path="/" element={<QuestionForm/>} />
-            <Route path="/browse" element={<QuestionForm/>} />
+            <Route path="/browse" element={<QuestionCardList/>} />
         </Routes>
     </BrowserRouter>
 );
