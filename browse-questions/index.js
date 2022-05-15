@@ -10,7 +10,7 @@ const subscribe = () => {
 
     const kafka = new Kafka({
         clientId: "consumer",
-        brokers: ['panos-Inspiron-7570:9092'],
+        brokers: ['node-0:9092'],
     })
 
     const consumer = kafka.consumer({ groupId: "browse-questions-group" })
