@@ -19,7 +19,7 @@ class QuestionForm extends Component {
 
         const config = {
             method: 'POST',
-            url: "http://localhost:4001/",
+            url: "http://192.168.0.6:4001/",
             headers: {'Content-Type': 'application/json'},
             data: {
                 qname: this.state.qname,
