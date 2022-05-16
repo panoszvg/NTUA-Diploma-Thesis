@@ -41,7 +41,7 @@ const subscribe = () => {
 
 subscribe();
 
-// sequelize.sync({ force: true })
+sequelize.sync({ force: true })
 
 const port = Number(4002);
 
