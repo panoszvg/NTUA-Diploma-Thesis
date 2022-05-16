@@ -44,7 +44,8 @@ subscribe();
 // sequelize.sync({ force: true })
 
 const port = Number(4002);
+const PORT = process.env.PORT || port;
 
-app.listen(port, () => {
-    console.log(`Answers Service running on port ${port}!`)
+app.listen(PORT, () => {
+    console.log(`Answers Service running on port ${PORT}!`)
 });
