@@ -9,7 +9,7 @@ const subscribe = () => {
 
     const kafka = new Kafka({
         clientId: "consumer",
-        brokers: ['node-0:9092'],
+        brokers: ['83.212.78.171:9092'],
     })
 
     const consumer = kafka.consumer({ groupId: "answers-group" })

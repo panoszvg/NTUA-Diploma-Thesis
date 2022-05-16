@@ -55,7 +55,7 @@ exports.postAnswer = (req, res, next) => {
 
         const kafka = new Kafka({
             clientId: "answers",
-            brokers: ['node-0:9092'],
+            brokers: ['83.212.78.171:9092'],
         })
 
         const producer = kafka.producer();
