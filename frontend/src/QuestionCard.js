@@ -57,7 +57,7 @@ class QuestionCardList extends Component {
     componentDidMount() {
         const config = {
             method: 'POST',
-            url: "http://ntua-thesis-browse-questions.herokuapp.com/show",
+            url: "https://ntua-thesis-browse-questions.herokuapp.com/show",
             headers: {'Content-Type': 'application/json'},
             data: {
                 pageNumber: 1
