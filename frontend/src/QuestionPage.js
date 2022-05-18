@@ -48,7 +48,7 @@ class QuestionPage extends Component {
             id: props.id,
             title: '',
             text: '',
-            dateCreated: '',
+            dateCreated: null,
             keywords: [],
             answers: [],
             answerText: ''
@@ -117,7 +117,12 @@ class QuestionPage extends Component {
             <div className="QuestionPage">
                 <h1>{this.state.title}</h1>
                 <h3>{this.state.text}</h3>
-                <div className="row">{this.state.keywords.map(this._renderKeywords)}</div>
+                <div>
+                <p><b>Created at: </b>{new Date(this.state.dateCreated).toLocaleString() || ''}</p>
+                </div>
+                <div className="row">
+                    {this.state.keywords.map(this._renderKeywords)}
+                </div>
                 <br /><hr />
                 <h2>Answers</h2>
                 <br />
