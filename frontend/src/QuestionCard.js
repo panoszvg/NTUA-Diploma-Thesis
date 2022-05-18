@@ -84,7 +84,7 @@ class QuestionCardList extends Component {
 
     render() {
         return(
-            <div className="QuestionCardList">{(this.state.questions != null) ? this.state.questions.map(this._renderQuestions) : []}</div>
+            <div className="QuestionCardList">{(this.state.questions != null) ? this.state.questions.sort((a, b) => a.id - b.id).map(this._renderQuestions) : []}</div>
         )
     }
 
