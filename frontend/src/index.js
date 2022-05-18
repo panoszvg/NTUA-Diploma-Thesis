@@ -4,7 +4,7 @@ import './index.css';
 import Navbar from './Navbar';
 import QuestionForm from './QuestionForm';
 import QuestionCardList from './QuestionCard';
-import QuestionPage from './QuestionPage';
+import QuestionPageWrapper from './QuestionPage';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -15,7 +15,7 @@ root.render(
         <Routes>
             <Route path="/" element={<QuestionForm/>} />
             <Route path="/browse" element={<QuestionCardList/>} />
-            <Route path="/question/:id" element={<QuestionPage/>} />
+            <Route path="/question/:id" element={<QuestionPageWrapper/>} />
         </Routes>
     </BrowserRouter>
 );
