@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import './QuestionPage.css';
+const axios = require('axios');
 
 class Keyword extends Component {
 
@@ -20,6 +21,25 @@ class Answer extends Component {
 }
 
 class QuestionPage extends Component {
+
+    constructor() {
+        super();
+    }
+
+    componentDidMount() {
+        const config = {
+            method: 'GET',
+            url: "https://ntua-thesis-answers.herokuapp.com/question/",
+            headers: {'Content-Type': 'application/json'}
+        }
+        axios(config)
+        .then(res => {
+            this.setState({questions: res.data.questions});
+        })
+        .catch(err => {
+            console.log(err);
+        })
+    }
 
     render() {
         return(
