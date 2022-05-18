@@ -9,6 +9,9 @@ exports.show = (req, res, next) => {
 
     const pageNumber = req.body.pageNumber - 1;
     let questionsArray = [];
+    let allQuestions;
+
+    models.Questions.count().then(res => { allQuestions = res; })
 
     models.Questions.findAll({
         where: {
@@ -28,13 +31,20 @@ exports.show = (req, res, next) => {
             question.title = row.title;
             question.text = row.text;
             question.dateCreated = new Intl.DateTimeFormat('en-US', dateOptions).format(row.dateCreated);
-            question.keywords = row.keywords;
+            let [
+                [...tempKeywords]
+            ] = row.keywords;
+            question.keywords = tempKeywords;
             question.numberOfAnswers = (row.answers !== null) ? row.answers.length : 0;
 
             questionsArray.push(question);
             console.log(questionsArray)
         })
-        res.status(200).json(questionsArray);
+        const returnMessage = {
+            questions: questionsArray,
+            qCount: allQuestions
+        }
+        return res.status(200).json(returnMessage);
     }).catch(err => res.status(500).json({ message: 'Internal server error.', type: 'error' }))
 
 }
