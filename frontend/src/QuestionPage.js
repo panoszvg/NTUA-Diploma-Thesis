@@ -50,7 +50,8 @@ class QuestionPage extends Component {
             text: '',
             dateCreated: '',
             keywords: [],
-            answers: []
+            answers: [],
+            answerText: ''
         }
     }
 
@@ -62,12 +63,11 @@ class QuestionPage extends Component {
         }
         axios(config)
         .then(res => {
-            console.log(res.data)
             this.setState({title: res.data.question.title});
             this.setState({text: res.data.question.text});
             this.setState({dateCreated: res.data.question.dateCreated});
             this.setState({keywords: res.data.question.keywords[0]});
-            this.setState({answers: (res.data.answers.length != 0) ? res.data.question.answers : []});
+            this.setState({answers: (res.data.answers.length !== 0) ? res.data.answers : []});
         })
         .catch(err => {
             console.log(err);
@@ -79,11 +79,40 @@ class QuestionPage extends Component {
     }
 
     _renderAnswers(answer, index) {
-        return (<Answer key={index} answer={answer}/>)
+        return (<Answer key={index} answer={answer.text}/>)
+    }
+
+    handleText = (event) => {
+        this.setState({answerText: event.target.value})
+    }
+
+    handleSubmit = (event) => {
+
+        if (this.state.answerText === '') return;
+
+        event.preventDefault()
+
+        const config = {
+            method: 'POST',
+            url: `https://ntua-thesis-answers.herokuapp.com/answers/${this.state.id}`,
+            headers: {'Content-Type': 'application/json'},
+            data: {
+                answer: this.state.answerText
+            }
+        }
+
+        axios(config)
+        .then(res => {
+            console.log(res)
+            this.setState({answerText: ''});
+            window.location.reload(false);
+        })
+        .catch(err => {
+            console.log(err);
+        })
     }
 
     render() {
-        console.log(this.state.keywords)
         return(
             <div className="QuestionPage">
                 <h1>{this.state.title}</h1>
@@ -92,11 +121,14 @@ class QuestionPage extends Component {
                 <br /><hr />
                 <h2>Answers</h2>
                 <br />
-                <div className="AnswersContainer">{(this.state.answers != []) ? this.state.answers.map(this._renderAnswers) : <br />}</div>
+                {/* <div className="AnswersContainer">{(answers.length !== 0) ? answers.map(this._renderAnswers) : <br />}</div> */}
+                <div className="AnswersContainer">{this.state.answers.map(this._renderAnswers)}</div>
                     <br /><br />
-                    <textarea name="" id="" cols="70" rows="10"></textarea>
-                    <br /><br /><br />
-                    <button>Submit</button>
+                    <form onSubmit={this.handleSubmit}>
+                        <textarea name="" id="" cols="70" rows="10" onChange={this.handleText}></textarea>
+                        <br /><br /><br />
+                        <button>Submit</button>
+                    </form>
             </div>
         )
     }
