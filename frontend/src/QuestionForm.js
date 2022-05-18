@@ -19,7 +19,7 @@ class QuestionForm extends Component {
 
         const config = {
             method: 'POST',
-            url: "http://192.168.0.6:4001/",
+            url: "https://ntua-thesis-ask-questions.herokuapp.com/",
             headers: {'Content-Type': 'application/json'},
             data: {
                 qname: this.state.qname,
@@ -30,7 +30,10 @@ class QuestionForm extends Component {
 
         axios(config)
         .then(res => {
-            console.log(res);
+            this.setState({qname: ''});
+            this.setState({qtext: ''});
+            this.setState({qkeywords: ''});
+            window.location.reload(false);
         })
         .catch(err => {
             console.log(err);
