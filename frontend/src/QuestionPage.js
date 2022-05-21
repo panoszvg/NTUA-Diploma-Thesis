@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { useParams } from "react-router";
+import './QuestionCard.css';
 import './QuestionPage.css';
 const axios = require('axios');
 
@@ -120,7 +121,7 @@ class QuestionPage extends Component {
                 <div>
                 <p><b>Created at: </b>{new Date(this.state.dateCreated).toLocaleString() || ''}</p>
                 </div>
-                <div className="row">
+                <div className="row" style={{"marginTop": "40px"}}>
                     {this.state.keywords.map(this._renderKeywords)}
                 </div>
                 <br /><hr />
