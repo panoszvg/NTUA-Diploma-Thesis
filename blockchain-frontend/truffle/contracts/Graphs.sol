@@ -17,6 +17,7 @@ contract Graphs {
 
     // add keywords, question, answers
     function addToDay(uint date, string memory newKeywordsString, uint newQuestions, uint newAnswers) public {
+        require(date % 86400 == 0 , "Date given must have a time of 00:00:00");
         string[] memory newKeywords = newKeywordsString.split(",");
         // add new keywords to day
         for (uint i = 0; i < newKeywords.length; i++) {
