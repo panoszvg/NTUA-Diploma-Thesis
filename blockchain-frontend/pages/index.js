@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import contract from '../truffle/build/contracts/Graphs.json';
 
-const contractAddress = "0xff0D036b48FfE3DBA3215e535f205033115B03C1";
+const contractAddress = "0xfd7EBed0E0a0cE3b3F6958a2DaD47A5A1b738A8a";
 const abi = contract.abi;
 
 export default function Home() {
@@ -50,7 +50,23 @@ export default function Home() {
         }
     }
 
-    const balanceGetter = async () => {
+    const disconnectWalletHandler = async () => {
+        const { ethereum } = window;
+        
+        if (!ethereum) {
+            alert("Please install Metamask!");
+        }
+
+        try {
+            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            console.log("Found an account! Address: ", accounts[0]);
+            setCurrentAccount(null);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const getData = async () => {
         try {
             const { ethereum } = window;
 
@@ -59,8 +75,11 @@ export default function Home() {
                 const signer = provider.getSigner();
                 const contract = new ethers.Contract(contractAddress, abi, signer);
 
-                let result = await contract.getVendingMachineBalance();
-                setDonuts(parseInt((result._hex).toString(16), 16));    
+                console.log(contract)
+
+                let result = await contract.getDays(1654387200, 1654473600);
+                // setDonuts(parseInt((result._hex).toString(16), 16));
+                console.log(result);
             }
             else {
                 console.log("Ethereum object does not exist");
@@ -71,7 +90,7 @@ export default function Home() {
         }
     }
 
-    const donutPurchaser = async () => {
+    const addData = async () => {
         try {
             const { ethereum } = window;
 
@@ -80,17 +99,17 @@ export default function Home() {
                 const signer = provider.getSigner();
                 const contract = new ethers.Contract(contractAddress, abi, signer);
 
-                const privateKey = process.env.REACT_APP_PRIVATE_KEY;
+                const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY;
                 let wallet = new ethers.Wallet(privateKey, provider);
                 let contractWithSigner = contract.connect(wallet);
 
-                let amount = ethers.utils.parseUnits("2", "ether");
-                console.log(amount);
-
-                let result = await contractWithSigner.purchase(1, {value: amount, gasLimit: 6721975});
+                // addToDay(uint date, string memory newKeywordsString, uint newQuestions, uint newAnswers)
+                const stringArg = "test,test2";
+                let result = await contractWithSigner.addToDay(1654473600, stringArg, 1, 0, {gasLimit: 6721975});
                 
-                result = await contract.getVendingMachineBalance();
-                setDonuts(parseInt((result._hex).toString(16), 16));    
+                // result = await contract.getDays(1654387200, 1654473600);
+                // setDonuts(parseInt((result._hex).toString(16), 16));
+                console.log(result);    
             }
             else {
                 console.log("Ethereum object does not exist");
@@ -109,18 +128,26 @@ export default function Home() {
         )
     }
 
-    const getBalance = () => {
+    const disconnectWalletButton = () => {
         return (
-            <button onClick={balanceGetter} className={`${styles.ctaButton} ${styles.orangeButton}`}>
-                Get Donuts
+        <button onClick={disconnectWalletHandler} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
+            Disconnect Wallet
+        </button>
+        )
+    }
+
+    const getDataHandler = () => {
+        return (
+            <button onClick={getData} className={`${styles.ctaButton} ${styles.orangeButton}`}>
+                Get Data
             </button>
         )
     }
 
-    const purchaseDonut = () => {
+    const addDataHandler = () => {
         return (
-            <button onClick={donutPurchaser} className={`${styles.ctaButton} ${styles.orangeButton}`}>
-                Purchase Donut
+            <button onClick={addData} className={`${styles.ctaButton} ${styles.orangeButton}`}>
+                Add Data
             </button>
         )
     }
@@ -128,31 +155,24 @@ export default function Home() {
     useEffect(() => {
         checkWalletIsConnected();
     }, []);
-	
-	const MS_SECONDS = 10000;
-	useEffect(() => {
-		const interval = setInterval(() => {
-			console.log('Logs every 10 seconds');
-			fetch('api/update').then((res) => console.log(res));
-		}, MS_SECONDS);
-
-		return () => clearInterval(interval);
-	}, []);
 
     return (
         <div className={styles.mainApp}>
-            <h1>Vending Machine</h1>
+            <h1>Graphs Service</h1>
             <div className={styles.row}>
                 {currentAccount ? `Address connected is: ${currentAccount}` : connectWalletButton()}
             </div>
             <div className={styles.row}>
+                {currentAccount ? disconnectWalletButton() : ''}
+            </div>
+            <div className={styles.row}>
 
                 <div className={styles.col}>
-                    {currentAccount ? getBalance() : ''}
+                    {currentAccount ? getDataHandler() : ''}
                     <h3>{(donuts !== null) ? `There are ${donuts} donuts` : ''}</h3>
                 </div>
                 <div className={styles.col}>
-                    {currentAccount ? purchaseDonut() : ''}
+                    {currentAccount ? addDataHandler() : ''}
                     <h3>{(donuts !== null) ? `Purchased a donut` : ''}</h3>
                 </div>
             </div>
