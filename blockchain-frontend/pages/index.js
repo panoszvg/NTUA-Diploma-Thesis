@@ -1,12 +1,15 @@
 import styles from '../styles/Home.module.css';
 import Head from 'next/head';
 import { ethers } from 'ethers';
+const Contract = require('web3-eth');
+import { BatchRequest } from 'web3-core';
 import { useEffect, useState } from 'react';
 import contract from '../truffle/build/contracts/Graphs.json';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
 
 const abi = contract.abi;
+const contractAddress = "0x1C4a78050B3BCb9cF2700aCb54B758cc03D8De1f"
 
 export default function Home() {
 
@@ -14,7 +17,6 @@ export default function Home() {
     const [keywordsData, setKeywordsData] = useState([]);
     const [questionsData, setQuestionsData] = useState([]);
     const [answersData, setAnswersData] = useState([]);
-    const [contractAddress, setContractAddress] = useState('');
 
     const checkWalletIsConnected = async () => {
         const { ethereum } = window;
@@ -86,7 +88,7 @@ export default function Home() {
 
                 console.log(contract)
 
-                let result = await contract.getDays(1654387200, 1654473600);
+                let result = await contract.getDays(1654214400, 1654473600);
                 // setDonuts(parseInt((result._hex).toString(16), 16));
                 console.log(result);
             }
@@ -99,6 +101,19 @@ export default function Home() {
         }
     }
 
+    const makeTransaction = (promise) => {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+
+        const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY;
+        let wallet = new ethers.Wallet(privateKey, provider);
+        let contractWithSigner = contract.connect(wallet);
+
+        contractWithSigner.addToDay(promise[0], promise[1], promise[2], promise[3], {gasLimit: 6721975, nonce: promise[4]});
+        // console.log(result)
+    }
+
     const addData = async () => {
         if (contractAddress !== '' && currentAccount) ;
         else {
@@ -106,33 +121,22 @@ export default function Home() {
             return;
         }
         try {
-            const { ethereum } = window;
-
             if (ethereum) {
-                const provider = new ethers.providers.Web3Provider(ethereum);
-                const signer = provider.getSigner();
-                const contract = new ethers.Contract(contractAddress, abi, signer);
-
-                const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY;
-                let wallet = new ethers.Wallet(privateKey, provider);
-                let contractWithSigner = contract.connect(wallet);
-
-
                 let data = [
                     {
-                        "date": 1654203600,
+                        "date": 1654214400,
                         "topic": "QUESTION",
                         "keywords": "question,14,kafka"
                     },
                     {
-                        "date": 1654203600,
+                        "date": 1654214400,
                         "topic": "QUESTION",
                         "keywords": "question,15,kafka"
                     },
                     {
-                        "date": 1654290000,
+                        "date": 1654300800,
                         "topic": "ANSWER",
-                        "keywords": []
+                        "keywords": ''
                     }
                 ]
 
@@ -153,25 +157,24 @@ export default function Home() {
                             keywords: (elem.topic === "QUESTION") ? elem.keywords.concat(',' + days.get(elem.date).keywords) : days.get(elem.date).keywords
                         })
                     }
-                })
+                });
 
-                let promises = []
-                days.forEach((elem, key) => {
-                    promises.push(contractWithSigner.addToDay(key, elem.keywords, elem.questions, elem.answers, {gasLimit: 6721975}));
-                    // let result = await contractWithSigner.addToDay(key, elem.keywords, elem.questions, elem.answers, {gasLimit: 6721975});
-                })
-
-                for (let i = 0; i < promises.length; i++) {
-                    let result = await contractWithSigner.addToDay(1654473600, stringArg, 1, 0, {gasLimit: 6721975});
-                }
-
-                // addToDay(uint date, string memory newKeywordsString, uint newQuestions, uint newAnswers)
-                // const stringArg = "test,test2";
-                // let result = await contractWithSigner.addToDay(1654473600, stringArg, 1, 0, {gasLimit: 6721975});
+                const Web3 = require('web3');
+                const web3 = new Web3(Web3.givenProvider);
+                const contract = new web3.eth.Contract(abi, contractAddress);
+                let batch = new web3.BatchRequest();
                 
-                // result = await contract.getDays(1654387200, 1654473600);
-                // setDonuts(parseInt((result._hex).toString(16), 16));
-                // console.log(result);    
+                days.forEach((elem, key) => {
+                    // batch.add(contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers))
+                    batch.add(contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers).send({ from: currentAccount }));
+                });
+                
+                // batch.add(contract.methods.addToDay(1654473600, stringArg, 1, 0));
+                // console.log(contract.methods.addToDay(1654473600, stringArg, 1, 0))
+                // batch.add(contract.methods.addToDay(1654473600, stringArg, 1, 0).send({ from: currentAccount }));
+
+                batch.execute();
+
             }
             else {
                 console.log("Ethereum object does not exist");
@@ -194,14 +197,6 @@ export default function Home() {
         return (
         <button onClick={disconnectWalletHandler} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
             Disconnect Wallet
-        </button>
-        )
-    }
-
-    const addAddressButton = () => {
-        return (
-        <button onClick={addAddressButton} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
-            Add Contract Address
         </button>
         )
     }
@@ -237,14 +232,14 @@ export default function Home() {
             </div>
             <div className={styles.row} style={{"marginTop": "30px"}}>
                 <div className={styles.col}>
-                    {(contractAddress !== '' && currentAccount != null) ? '' : addAddressButton()}
-                </div>
-                <div className={styles.col}>
                     {currentAccount ? disconnectWalletButton() : connectWalletButton()}
                 </div>
-            </div>
-            <div style={{"marginTop": "40px"}}>
+                <div className={styles.col}>
                     {addDataHandler()}
+                </div>
+            </div>
+            <div className={styles.row}>
+                {getDataHandler()}
             </div>
             <div className={styles.row}>
                 <div className={styles.col}>
