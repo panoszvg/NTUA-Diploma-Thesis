@@ -1,15 +1,20 @@
 import styles from '../styles/Home.module.css';
+import Head from 'next/head';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import contract from '../truffle/build/contracts/Graphs.json';
+import BarChart from './BarChart';
+import LineChart from './LineChart';
 
-const contractAddress = "0xfd7EBed0E0a0cE3b3F6958a2DaD47A5A1b738A8a";
 const abi = contract.abi;
 
 export default function Home() {
 
-  const [currentAccount, setCurrentAccount] = useState(null);
-    const [donuts, setDonuts] = useState(null);
+    const [currentAccount, setCurrentAccount] = useState(null);
+    const [keywordsData, setKeywordsData] = useState([]);
+    const [questionsData, setQuestionsData] = useState([]);
+    const [answersData, setAnswersData] = useState([]);
+    const [contractAddress, setContractAddress] = useState('');
 
     const checkWalletIsConnected = async () => {
         const { ethereum } = window;
@@ -48,6 +53,10 @@ export default function Home() {
         } catch (err) {
             console.log(err);
         }
+    }
+
+    const addContractHandler = (address) => {
+        setContractAddress(address);
     }
 
     const disconnectWalletHandler = async () => {
@@ -91,6 +100,11 @@ export default function Home() {
     }
 
     const addData = async () => {
+        if (contractAddress !== '' && currentAccount) ;
+        else {
+            console.log("Problem");
+            return;
+        }
         try {
             const { ethereum } = window;
 
@@ -103,13 +117,61 @@ export default function Home() {
                 let wallet = new ethers.Wallet(privateKey, provider);
                 let contractWithSigner = contract.connect(wallet);
 
+
+                let data = [
+                    {
+                        "date": 1654203600,
+                        "topic": "QUESTION",
+                        "keywords": "question,14,kafka"
+                    },
+                    {
+                        "date": 1654203600,
+                        "topic": "QUESTION",
+                        "keywords": "question,15,kafka"
+                    },
+                    {
+                        "date": 1654290000,
+                        "topic": "ANSWER",
+                        "keywords": []
+                    }
+                ]
+
+                let days = new Map();
+
+                data.map(elem => {
+                    if (!days.get(elem.date)) {
+                        days.set(elem.date, {
+                            questions: (elem.topic === "QUESTION") ? 1 : 0,
+                            answers: (elem.topic === "QUESTION") ? 0 : 1,
+                            keywords: (elem.topic === "QUESTION") ? elem.keywords : ''
+                        })
+                    }
+                    else {
+                        days.set(elem.date, {
+                            questions: (elem.topic === "QUESTION") ? days.get(elem.date).questions + 1 : days.get(elem.date).questions,
+                            answers: (elem.topic === "QUESTION") ? days.get(elem.date).answers : days.get(elem.date).answers + 1,
+                            keywords: (elem.topic === "QUESTION") ? elem.keywords.concat(',' + days.get(elem.date).keywords) : days.get(elem.date).keywords
+                        })
+                    }
+                })
+
+                let promises = []
+                days.forEach((elem, key) => {
+                    promises.push(contractWithSigner.addToDay(key, elem.keywords, elem.questions, elem.answers, {gasLimit: 6721975}));
+                    // let result = await contractWithSigner.addToDay(key, elem.keywords, elem.questions, elem.answers, {gasLimit: 6721975});
+                })
+
+                for (let i = 0; i < promises.length; i++) {
+                    let result = await contractWithSigner.addToDay(1654473600, stringArg, 1, 0, {gasLimit: 6721975});
+                }
+
                 // addToDay(uint date, string memory newKeywordsString, uint newQuestions, uint newAnswers)
-                const stringArg = "test,test2";
-                let result = await contractWithSigner.addToDay(1654473600, stringArg, 1, 0, {gasLimit: 6721975});
+                // const stringArg = "test,test2";
+                // let result = await contractWithSigner.addToDay(1654473600, stringArg, 1, 0, {gasLimit: 6721975});
                 
                 // result = await contract.getDays(1654387200, 1654473600);
                 // setDonuts(parseInt((result._hex).toString(16), 16));
-                console.log(result);    
+                // console.log(result);    
             }
             else {
                 console.log("Ethereum object does not exist");
@@ -132,6 +194,14 @@ export default function Home() {
         return (
         <button onClick={disconnectWalletHandler} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
             Disconnect Wallet
+        </button>
+        )
+    }
+
+    const addAddressButton = () => {
+        return (
+        <button onClick={addAddressButton} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
+            Add Contract Address
         </button>
         )
     }
@@ -160,22 +230,34 @@ export default function Home() {
         <div className={styles.mainApp}>
             <h1>Graphs Service</h1>
             <div className={styles.row}>
-                {currentAccount ? `Address connected is: ${currentAccount}` : connectWalletButton()}
+                {currentAccount ? `Wallet Address connected is: ${currentAccount}` : 'No Wallet Address connected.'}
+            </div>
+            <div className={styles.row} style={{"marginTop": "10px"}}>
+                {(contractAddress !== '') ? `Contract Address connected is: ${contractAddress}` : 'No Contract Address given.'}
+            </div>
+            <div className={styles.row} style={{"marginTop": "30px"}}>
+                <div className={styles.col}>
+                    {(contractAddress !== '' && currentAccount != null) ? '' : addAddressButton()}
+                </div>
+                <div className={styles.col}>
+                    {currentAccount ? disconnectWalletButton() : connectWalletButton()}
+                </div>
+            </div>
+            <div style={{"marginTop": "40px"}}>
+                    {addDataHandler()}
             </div>
             <div className={styles.row}>
-                {currentAccount ? disconnectWalletButton() : ''}
+                <div className={styles.col}>
+                    <BarChart data={keywordsData}/>
+                </div>
+                <div className={styles.col}>
+                    <LineChart data={questionsData} title={'Number of Questions'}/>
+                </div>
+                <div className={styles.col}>
+                    <LineChart data={answersData} title={'Number of Answers'}/>
+                </div>
             </div>
-            <div className={styles.row}>
 
-                <div className={styles.col}>
-                    {currentAccount ? getDataHandler() : ''}
-                    <h3>{(donuts !== null) ? `There are ${donuts} donuts` : ''}</h3>
-                </div>
-                <div className={styles.col}>
-                    {currentAccount ? addDataHandler() : ''}
-                    <h3>{(donuts !== null) ? `Purchased a donut` : ''}</h3>
-                </div>
-            </div>
         </div>
     )
 }
