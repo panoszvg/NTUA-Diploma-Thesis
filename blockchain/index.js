@@ -27,7 +27,8 @@ const subscribe = () => {
                 kafkaMessages.push({
                     date: date,
                     topic: topic,
-                    keywords: jsonMessage.qkeywords || []
+                    keywords: jsonMessage.qkeywords || "",
+                    noKeywords: (jsonMessage.qkeywords === "" && topic === "QUESTION") ? 1 : 0
                 })
             }
         })

@@ -3,13 +3,6 @@ import { Line } from 'react-chartjs-2'
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement);
 
-const labels = ['1', '2', '3', '4', '5'];
-let info = {
-    labels: labels,
-    datasets: [{
-        data: [],
-    }],
-};
 const options = {
     maintainAspectRatio: false,
     plugins: {
@@ -43,7 +36,26 @@ const options = {
 export default (props) => ({
     displayName: '',
     render() {
-        info.datasets[0].data = props.data;
+        
+        let todayString = '';
+        let threeDaysAgoString = '';
+        if (props.data.length !== 0) {
+            const today = new Date();
+            todayString = today.getDate() + "/" + (parseInt(today.getMonth()) + 1) + "/" + today.getFullYear();
+            const threeDaysAgo = new Date(today.getTime());
+            threeDaysAgo.setDate(today.getDate() - 3);   
+            threeDaysAgoString = threeDaysAgo.getDate() + "/" + (parseInt(threeDaysAgo.getMonth()) + 1) + "/" + threeDaysAgo.getFullYear();
+        }
+        
+
+        const labels = ['', threeDaysAgoString, '', '', todayString];
+        let info = {
+            labels: labels,
+            datasets: [{
+                data: props.data || [],
+            }],
+        };
+
         this.displayName = props.title;
         return (
             <div style={{'maxHeight' : '200px'}}>

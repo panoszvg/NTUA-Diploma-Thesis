@@ -7,9 +7,10 @@ import { useEffect, useState } from 'react';
 import contract from '../truffle/build/contracts/Graphs.json';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
+import { Dropdown } from 'semantic-ui-react';
 
 const abi = contract.abi;
-const contractAddress = "0x1C4a78050B3BCb9cF2700aCb54B758cc03D8De1f"
+const contractAddress = "0x251e6D081eEb399783CB94F5e3C84B883576Cb8b"
 
 export default function Home() {
 
@@ -17,6 +18,8 @@ export default function Home() {
     const [keywordsData, setKeywordsData] = useState([]);
     const [questionsData, setQuestionsData] = useState([]);
     const [answersData, setAnswersData] = useState([]);
+    const [noKeywordsData, setNoKeywordsData] = useState([]);
+    const [isOpen, setOpen] = useState(false);
 
     const checkWalletIsConnected = async () => {
         const { ethereum } = window;
@@ -26,14 +29,14 @@ export default function Home() {
             return;
         }
         else {
-            console.log("Wallet exists! We're ready to go!");    
+            // console.log("Wallet exists! We're ready to go!");    
         }
 
         const accounts = await ethereum.request({ method: 'eth_accounts' });
 
         if (accounts.length !== 0) {
             const account = accounts[0];
-            console.log("Found an authorized account: ", account);
+            // console.log("Found an authorized account: ", account);
             setCurrentAccount(account);
         }
         else {
@@ -86,11 +89,24 @@ export default function Home() {
                 const signer = provider.getSigner();
                 const contract = new ethers.Contract(contractAddress, abi, signer);
 
-                console.log(contract)
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayInSeconds = Math.floor(today / 1000) + (86400/8);
+                const previousDate = todayInSeconds - (4 * 86400);
+                let result = await contract.getDays(previousDate, todayInSeconds);
 
-                let result = await contract.getDays(1654214400, 1654473600);
-                // setDonuts(parseInt((result._hex).toString(16), 16));
-                console.log(result);
+                setKeywordsData(result.keywords);
+                let newQuestionsData = [];
+                let newAnswersData = [];
+                let newNoKeywordsData = [];
+                for (let i = 0 ; i < result.questions.length; i++) {
+                    newQuestionsData.push(parseInt((result.questions[i]._hex).toString(16), 16));
+                    newAnswersData.push(parseInt((result.answers[i]._hex).toString(16), 16));
+                    newNoKeywordsData.push(parseInt((result.noKeywords[i]._hex).toString(16), 16));
+                }
+                setQuestionsData(newQuestionsData);
+                setAnswersData(newAnswersData);
+                setNoKeywordsData(newNoKeywordsData);
             }
             else {
                 console.log("Ethereum object does not exist");
@@ -122,21 +138,33 @@ export default function Home() {
         }
         try {
             if (ethereum) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const todayInSeconds = Math.floor(today / 1000) + (86400 / 8) - (86400 * 2);
                 let data = [
                     {
-                        "date": 1654214400,
+                        "date": todayInSeconds,
                         "topic": "QUESTION",
-                        "keywords": "question,14,kafka"
+                        "keywords": "question,14,kafka",
+                        "noKeywords": 0
                     },
                     {
-                        "date": 1654214400,
+                        "date": todayInSeconds,
                         "topic": "QUESTION",
-                        "keywords": "question,15,kafka"
+                        "keywords": "question,15,kafkajs",
+                        "noKeywords": 0
                     },
                     {
-                        "date": 1654300800,
+                        "date": todayInSeconds,
+                        "topic": "QUESTION",
+                        "keywords": "",
+                        "noKeywords": 1
+                    },
+                    {
+                        "date": todayInSeconds,
                         "topic": "ANSWER",
-                        "keywords": ''
+                        "keywords": '',
+                        "noKeywords": 0
                     }
                 ]
 
@@ -147,32 +175,44 @@ export default function Home() {
                         days.set(elem.date, {
                             questions: (elem.topic === "QUESTION") ? 1 : 0,
                             answers: (elem.topic === "QUESTION") ? 0 : 1,
-                            keywords: (elem.topic === "QUESTION") ? elem.keywords : ''
+                            keywords: (elem.topic === "QUESTION") ? elem.keywords : '',
+                            noKeywords: elem.noKeywords
                         })
                     }
                     else {
-                        days.set(elem.date, {
-                            questions: (elem.topic === "QUESTION") ? days.get(elem.date).questions + 1 : days.get(elem.date).questions,
-                            answers: (elem.topic === "QUESTION") ? days.get(elem.date).answers : days.get(elem.date).answers + 1,
-                            keywords: (elem.topic === "QUESTION") ? elem.keywords.concat(',' + days.get(elem.date).keywords) : days.get(elem.date).keywords
-                        })
+                        if (elem.noKeywords === 0) {
+                            days.set(elem.date, {
+                                questions: (elem.topic === "QUESTION") ? days.get(elem.date).questions + 1 : days.get(elem.date).questions,
+                                answers: (elem.topic === "QUESTION") ? days.get(elem.date).answers : days.get(elem.date).answers + 1,
+                                keywords: (elem.topic === "QUESTION") ? elem.keywords.concat(',' + days.get(elem.date).keywords) : days.get(elem.date).keywords,
+                                noKeywords: elem.noKeywords + days.get(elem.date).noKeywords
+                            })
+                        }
+                        else {
+                            days.set(elem.date, {
+                                questions: (elem.topic === "QUESTION") ? days.get(elem.date).questions + 1 : days.get(elem.date).questions,
+                                answers: (elem.topic === "QUESTION") ? days.get(elem.date).answers : days.get(elem.date).answers + 1,
+                                keywords: days.get(elem.date).keywords,
+                                noKeywords: elem.noKeywords + days.get(elem.date).noKeywords
+                            })
+                        }
                     }
                 });
 
                 const Web3 = require('web3');
-                const web3 = new Web3(Web3.givenProvider);
+                const HDWalletProvider = require('@truffle/hdwallet-provider');
+                const provider = new HDWalletProvider(process.env.NEXT_PUBLIC_MNEMONIC, `https://ropsten.infura.io/v3/4753dbd425664af5b25153ac5bee2cb8`);
+                const web3 = new Web3(provider);
                 const contract = new web3.eth.Contract(abi, contractAddress);
+                contract.setProvider(provider);
                 let batch = new web3.BatchRequest();
-                
+
+                console.log(days)
+
                 days.forEach((elem, key) => {
-                    // batch.add(contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers))
-                    batch.add(contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers).send({ from: currentAccount }));
+                    batch.add(contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers, elem.noKeywords).send({ from: currentAccount }));
                 });
                 
-                // batch.add(contract.methods.addToDay(1654473600, stringArg, 1, 0));
-                // console.log(contract.methods.addToDay(1654473600, stringArg, 1, 0))
-                // batch.add(contract.methods.addToDay(1654473600, stringArg, 1, 0).send({ from: currentAccount }));
-
                 batch.execute();
 
             }
@@ -181,7 +221,7 @@ export default function Home() {
             }
         }
         catch(err) {
-            console.log(err);
+            // console.log(err);
         }
     }
 
@@ -243,13 +283,13 @@ export default function Home() {
             </div>
             <div className={styles.row}>
                 <div className={styles.col}>
-                    <BarChart data={keywordsData}/>
+                    <BarChart key={keywordsData} data={[keywordsData, noKeywordsData]}/>
                 </div>
                 <div className={styles.col}>
-                    <LineChart data={questionsData} title={'Number of Questions'}/>
+                    <LineChart key={questionsData} data={questionsData} title={'Number of Questions'}/>
                 </div>
                 <div className={styles.col}>
-                    <LineChart data={answersData} title={'Number of Answers'}/>
+                    <LineChart key={answersData} data={answersData} title={'Number of Answers'}/>
                 </div>
             </div>
 
