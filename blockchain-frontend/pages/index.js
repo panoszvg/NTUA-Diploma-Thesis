@@ -6,7 +6,7 @@ import BarChart from './BarChart';
 import LineChart from './LineChart';
 
 const abi = contract.abi;
-const contractAddress = "0x251e6D081eEb399783CB94F5e3C84B883576Cb8b"
+const contractAddress = "0x292BC609f99b1Fe0bEBf89ed5C6bCB3B27c796dB"
 
 export default function Home() {
 

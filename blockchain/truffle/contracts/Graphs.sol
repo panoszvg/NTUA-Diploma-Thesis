@@ -19,6 +19,7 @@ contract Graphs {
     // add keywords, question, answers, noKeywords
     function addToDay(uint date, string memory newKeywordsString, uint newQuestions, uint newAnswers, uint newNoKeywords) public {
         require(date % 86400 == 0 , "Date given must have a time of 00:00:00.");
+        
         // keywords are given
         if (bytes(newKeywordsString).length != 0) {
             require(newQuestions >= (newNoKeywords + 1), "The number of questions doesn't match the sum of questions with and without keywords.");

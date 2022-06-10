@@ -1,5 +1,4 @@
 const app = require('./app');
-const { kafkaMessages } = require('./data');
 const graphsContract = require('./wallet');
 
 const subscribe = () => {
@@ -31,7 +30,6 @@ const subscribe = () => {
                     let result;
                     if (jsonMessage.qkeywords === "") {
                         result = await graphsContract.methods.addToDay(date, '', 1, 0, 1).send({ from: process.env.ACCOUNT_ADDRESS });
-                        console.log("#### Should see this");
                     } else {
                         result = await graphsContract.methods.addToDay(date, jsonMessage.qkeywords, 1, 0, 0).send({ from: process.env.ACCOUNT_ADDRESS });
                     }
@@ -41,12 +39,6 @@ const subscribe = () => {
                     //console.log(result);
                 }
 
-                // kafkaMessages.push({
-                //     date: date,
-                //     topic: topic,
-                //     keywords: jsonMessage.qkeywords || "",
-                //     noKeywords: (jsonMessage.qkeywords === "" && topic === "QUESTION") ? 1 : 0
-                // })
             }
         })
     }

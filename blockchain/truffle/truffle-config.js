@@ -60,7 +60,7 @@ module.exports = {
         // Useful for deploying to a public network.
         // Note: It's important to wrap the provider as a function to ensure truffle uses a new provider every time.
         ropsten: {
-            provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/4753dbd425664af5b25153ac5bee2cb8`),
+            provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/515fa7c9a7bc4f2a90bcbca9a0e94ea0`),
             network_id: 3, // Ropsten's id
             gas: 5500000, // Ropsten has a lower block limit than mainnet
             confirmations: 2, // # of confirmations to wait between deployments. (default: 0)
