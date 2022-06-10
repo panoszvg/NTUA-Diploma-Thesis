@@ -21,7 +21,9 @@ export default (props) => ({
         
         data["No Keywords"] = 0;
         for (let i = 0; i < props.data[1].length; i++) {
-            data["No Keywords"]++;
+            for (let j = 0; j < props.data[1][i]; j++) {
+                data["No Keywords"]++;
+            }
         }
         
         let dataArray = Object.entries(data)
@@ -68,7 +70,10 @@ export default (props) => ({
             <h2>Top Keywords</h2>
             <Bar
                 data={info}
-                options={{ maintainAspectRatio: false }}
+                options={{ 
+                    maintainAspectRatio: false,
+                    scales: { yAxis: { ticks: { stepSize: 1 } } }
+                }}
             />
             </div>
         );

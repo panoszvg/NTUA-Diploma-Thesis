@@ -33,3 +33,14 @@
     margin-left: 10px;
     margin-right: 10px;
 }
+
+.top {
+    background: rgb(32, 129, 226);
+    color: antiquewhite;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    width: 100%;
+}

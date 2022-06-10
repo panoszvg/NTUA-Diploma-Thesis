@@ -29,6 +29,9 @@ const options = {
         },
         yAxis: {
             display: true,
+            ticks: {
+                stepSize: 1
+            }
         },
     },
 };
@@ -37,18 +40,17 @@ export default (props) => ({
     displayName: '',
     render() {
         
-        let todayString = '';
-        let threeDaysAgoString = '';
+        let daysStringsArray = []
         if (props.data.length !== 0) {
             const today = new Date();
-            todayString = today.getDate() + "/" + (parseInt(today.getMonth()) + 1) + "/" + today.getFullYear();
-            const threeDaysAgo = new Date(today.getTime());
-            threeDaysAgo.setDate(today.getDate() - 3);   
-            threeDaysAgoString = threeDaysAgo.getDate() + "/" + (parseInt(threeDaysAgo.getMonth()) + 1) + "/" + threeDaysAgo.getFullYear();
+            for (let day = 0; day < props.data.length; day++) {
+                let tempDate = new Date(today.getTime());
+                tempDate.setDate(today.getDate() - day)
+                daysStringsArray.unshift(tempDate.getDate() + "/" + (parseInt(tempDate.getMonth()) + 1) + "/" + tempDate.getFullYear().toString().substring(2,4));
+            }
         }
-        
 
-        const labels = ['', threeDaysAgoString, '', '', todayString];
+        const labels = daysStringsArray;
         let info = {
             labels: labels,
             datasets: [{
