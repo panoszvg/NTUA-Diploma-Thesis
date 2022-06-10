@@ -41,7 +41,7 @@ export default (props) => ({
     render() {
         
         let daysStringsArray = []
-        if (props.data.length !== 0) {
+        if (props.data !== undefined && props.data.length !== 0) {
             const today = new Date();
             for (let day = 0; day < props.data.length; day++) {
                 let tempDate = new Date(today.getTime());

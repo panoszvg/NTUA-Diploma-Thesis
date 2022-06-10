@@ -137,7 +137,6 @@ export default function Home() {
         getData();
         setInterval(() => {
             (currentAccount) ? getData() : '';
-            keywordsData; // access to update
         }, 5000)
     }, [])
 

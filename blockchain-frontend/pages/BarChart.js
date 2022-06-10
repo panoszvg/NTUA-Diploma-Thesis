@@ -10,19 +10,21 @@ export default (props) => ({
                 
         let data = {};
 
-        for (let i = 0; i < props.data[0].length; i++) {
-            if (data[props.data[0][i]] === undefined) {
-                data[props.data[0][i]] = 1;
+        if (props.data !== undefined) {
+            for (let i = 0; i < props.data[0].length; i++) {
+                if (data[props.data[0][i]] === undefined) {
+                    data[props.data[0][i]] = 1;
+                }
+                else {
+                    data[props.data[0][i]] = data[props.data[0][i]] + 1;
+                }
             }
-            else {
-                data[props.data[0][i]] = data[props.data[0][i]] + 1;
-            }
-        }
-        
-        data["No Keywords"] = 0;
-        for (let i = 0; i < props.data[1].length; i++) {
-            for (let j = 0; j < props.data[1][i]; j++) {
-                data["No Keywords"]++;
+            
+            data["No Keywords"] = 0;
+            for (let i = 0; i < props.data[1].length; i++) {
+                for (let j = 0; j < props.data[1][i]; j++) {
+                    data["No Keywords"]++;
+                }
             }
         }
         
