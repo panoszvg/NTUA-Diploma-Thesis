@@ -24,7 +24,7 @@ const subscribe = () => {
                 let jsonMessage = JSON.parse(message.value);
                 let date = new Date(parseInt(message.timestamp));
                 date.setHours(0, 0, 0, 0);
-                date = (date.getTime() / 1000) + (86400 / 8);
+                date = (date.getTime() / 1000);
 
                 // contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers, elem.noKeywords).send({ from: currentAccount })
                 if (topic === 'QUESTION') {
