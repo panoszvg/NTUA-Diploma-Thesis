@@ -9,7 +9,7 @@ const subscribe = () => {
         brokers: ['83.212.78.171:9092'],
     })
 
-    const consumer = kafka.consumer({ groupId: "test-3" })
+    const consumer = kafka.consumer({ groupId: "graphs-service" })
 
     const run = async() => {
         await consumer.connect()
