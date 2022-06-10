@@ -1,7 +1,7 @@
 import styles from '../styles/Home.module.css';
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
-import contract from '../truffle/build/contracts/Graphs.json';
+import contract from '../public/Graphs.json';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
 
