@@ -24,7 +24,7 @@ const subscribe = () => {
                 console.log(payload)
                 let jsonMessage = JSON.parse(message.value);
                 const now = new Date(parseInt(message.timestamp));
-                now.setTime(now.getTime() + (3 * 60 * 60 * 1000));
+                now.setTime(now.getTime());
                 if (topic == "QUESTION") {
                     models.Questions.create({
                         title: jsonMessage.qname,
