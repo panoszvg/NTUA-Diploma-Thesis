@@ -1,4 +1,3 @@
-require('dotenv').config()
 const fs = require('fs');
 const contract = JSON.parse(fs.readFileSync('./truffle/build/contracts/Graphs.json', 'utf8'));
 console.log(JSON.stringify(contract.abi));
