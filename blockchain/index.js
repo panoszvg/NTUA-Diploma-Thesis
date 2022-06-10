@@ -1,5 +1,6 @@
 const app = require('./app');
 const { kafkaMessages } = require('./data');
+const graphsContract = require('./wallet');
 
 const subscribe = () => {
     const { Kafka } = require("kafkajs")
@@ -9,7 +10,7 @@ const subscribe = () => {
         brokers: ['83.212.78.171:9092'],
     })
 
-    const consumer = kafka.consumer({ groupId: "blockchain" })
+    const consumer = kafka.consumer({ groupId: "test-3" })
 
     const run = async() => {
         await consumer.connect()
@@ -23,13 +24,29 @@ const subscribe = () => {
                 let jsonMessage = JSON.parse(message.value);
                 let date = new Date(parseInt(message.timestamp));
                 date.setHours(0, 0, 0, 0);
-                date = date.getTime() / 1000;
-                kafkaMessages.push({
-                    date: date,
-                    topic: topic,
-                    keywords: jsonMessage.qkeywords || "",
-                    noKeywords: (jsonMessage.qkeywords === "" && topic === "QUESTION") ? 1 : 0
-                })
+                date = (date.getTime() / 1000) + (86400 / 8);
+
+                // contract.methods.addToDay(key, elem.keywords, elem.questions, elem.answers, elem.noKeywords).send({ from: currentAccount })
+                if (topic === 'QUESTION') {
+                    let result;
+                    if (jsonMessage.qkeywords === "") {
+                        result = await graphsContract.methods.addToDay(date, '', 1, 0, 1).send({ from: process.env.ACCOUNT_ADDRESS });
+                        console.log("#### Should see this");
+                    } else {
+                        result = await graphsContract.methods.addToDay(date, jsonMessage.qkeywords, 1, 0, 0).send({ from: process.env.ACCOUNT_ADDRESS });
+                    }
+                    //console.log(result);
+                } else {
+                    let result = await graphsContract.methods.addToDay(date, '', 0, 1, 0).send({ from: process.env.ACCOUNT_ADDRESS });
+                    //console.log(result);
+                }
+
+                // kafkaMessages.push({
+                //     date: date,
+                //     topic: topic,
+                //     keywords: jsonMessage.qkeywords || "",
+                //     noKeywords: (jsonMessage.qkeywords === "" && topic === "QUESTION") ? 1 : 0
+                // })
             }
         })
     }
