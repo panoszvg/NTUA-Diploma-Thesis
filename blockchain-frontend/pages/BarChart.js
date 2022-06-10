@@ -20,10 +20,13 @@ export default (props) => ({
                 }
             }
             
-            data["No Keywords"] = 0;
-            for (let i = 0; i < props.data[1].length; i++) {
-                for (let j = 0; j < props.data[1][i]; j++) {
-                    data["No Keywords"]++;
+            // initialize "No keywords only if it exists"
+            if (props.data[1].some((e) => { return e > 0; })) {
+                data["No Keywords"] = 0;
+                for (let i = 0; i < props.data[1].length; i++) {
+                    for (let j = 0; j < props.data[1][i]; j++) {
+                        data["No Keywords"]++;
+                    }
                 }
             }
         }
@@ -37,8 +40,10 @@ export default (props) => ({
 
         if (dataArray.length > 1) {
             for (let i = 0; i < 5; i++) {
-                labelsArray.push(dataArray[i][0]);
-                valuesArray.push(dataArray[i][1]);
+                if (dataArray[i] !== undefined) {
+                    labelsArray.push(dataArray[i][0]);
+                    valuesArray.push(dataArray[i][1]);
+                }
             }
         }
         
