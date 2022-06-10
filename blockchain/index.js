@@ -33,10 +33,10 @@ const subscribe = () => {
                     } else {
                         result = await graphsContract.methods.addToDay(date, jsonMessage.qkeywords, 1, 0, 0).send({ from: process.env.ACCOUNT_ADDRESS });
                     }
-                    //console.log(result);
+                    console.log(result);
                 } else {
                     let result = await graphsContract.methods.addToDay(date, '', 0, 1, 0).send({ from: process.env.ACCOUNT_ADDRESS });
-                    //console.log(result);
+                    console.log(result);
                 }
 
             }
