@@ -23,12 +23,14 @@ const subscribe = () => {
                 const payload = `- ${prefix} ${message.key}#${message.value}`
                 console.log(payload)
                 let jsonMessage = JSON.parse(message.value);
+                const now = new Date();
+                now.setTime(now.getTime() + (3 * 60 * 60 * 1000));
                 if (topic == "QUESTION") {
                     models.Questions.create({
                         title: jsonMessage.qname,
                         text: jsonMessage.qtext,
                         keywords: [jsonMessage.qkeywords.replace(/\s/g, "").split(",")],
-                        dateCreated: Date.now(),
+                        dateCreated: now,
                         answers: null
                     })
                 }
