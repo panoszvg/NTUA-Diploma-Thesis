@@ -33,13 +33,13 @@ export default (props) => ({
         
         let dataArray = Object.entries(data)
         dataArray.sort((a, b) => { return b[1] - a[1] });
-        dataArray = dataArray.slice(0, 5);
+        dataArray = dataArray.slice(0, props.data[2]);
 
         let labelsArray = [];
         let valuesArray = [];
 
         if (dataArray.length > 1) {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < props.data[2]; i++) {
                 if (dataArray[i] !== undefined) {
                     labelsArray.push(dataArray[i][0]);
                     valuesArray.push(dataArray[i][1]);

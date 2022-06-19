@@ -11,14 +11,7 @@
     color: white;
     font-size: 18px;
     cursor: pointer;
-}
-
-.connectWalletButton {
     background: rgb(32, 129, 226);
-}
-
-.orangeButton {
-    background: orange;
 }
 
 .row {
@@ -43,4 +36,19 @@
     padding-top: 10px;
     padding-bottom: 5px;
     width: 100%;
+}
+
+.daysButton {
+    margin-left: 5px;
+    margin-right: 5px;
+    height: 30px;
+    width: 30px;
+    font-size: large;
+    border-radius: 15%;
+    border-width: 0.2px;
+    cursor: pointer;
+}
+
+.daysRow {
+    margin-top: 30px;
 }

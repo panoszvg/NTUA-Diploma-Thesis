@@ -1,164 +1,89 @@
 import styles from '../styles/Home.module.css';
-import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import contract from '../public/Graphs.json';
 import BarChart from './BarChart';
 import LineChart from './LineChart';
+import Web3 from 'web3';
+import HDWalletProvider from '@truffle/hdwallet-provider';
 
 const abi = contract.abi;
 const contractAddress = "0x292BC609f99b1Fe0bEBf89ed5C6bCB3B27c796dB"
 
 export default function Home() {
 
-    const [currentAccount, setCurrentAccount] = useState(null);
     const [keywordsData, setKeywordsData] = useState([]);
     const [questionsData, setQuestionsData] = useState([]);
     const [answersData, setAnswersData] = useState([]);
     const [noKeywordsData, setNoKeywordsData] = useState([]);
-
-    const checkWalletIsConnected = async () => {
-        const { ethereum } = window;
-        
-        if (!ethereum) {
-            console.log("Make sure you have Metamask installed!");
-            return;
-        }
-        else {
-            // console.log("Wallet exists! We're ready to go!");    
-        }
-
-        const accounts = await ethereum.request({ method: 'eth_accounts' });
-
-        if (accounts.length !== 0) {
-            const account = accounts[0];
-            // console.log("Found an authorized account: ", account);
-            setCurrentAccount(account);
-        }
-        else {
-            console.log("No authorized account found");
-        }
-    }
-
-    const connectWalletHandler = async () => {
-        const { ethereum } = window;
-        
-        if (!ethereum) {
-            alert("Please install Metamask!");
-        }
-
-        try {
-            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-            console.log("Found an account! Address: ", accounts[0]);
-            setCurrentAccount(accounts[0]);
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    const disconnectWalletHandler = async () => {
-        const { ethereum } = window;
-        
-        if (!ethereum) {
-            alert("Please install Metamask!");
-        }
-
-        try {
-            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-            console.log("Found an account! Address: ", accounts[0]);
-            setCurrentAccount(null);
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    const [days, setDays] = useState(5);
 
     const getData = async () => {
         try {
-            const { ethereum } = window;
+            const provider = new HDWalletProvider(process.env.NEXT_PUBLIC_MNEMONIC, `https://ropsten.infura.io/v3/515fa7c9a7bc4f2a90bcbca9a0e94ea0`)
+            const web3 = new Web3(provider);
+            const graphsContract = new web3.eth.Contract(abi, contractAddress);
+            graphsContract.setProvider(provider);
 
-            if (ethereum) {
-                const provider = new ethers.providers.Web3Provider(ethereum);
-                const signer = provider.getSigner();
-                const contract = new ethers.Contract(contractAddress, abi, signer);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayInSeconds = Math.floor(today / 1000) + (86400/8);
+            const previousDate = todayInSeconds - ((days - 1) * 86400);
+            
+            let result = await graphsContract.methods.getDays(previousDate, todayInSeconds).call();
 
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayInSeconds = Math.floor(today / 1000) + (86400/8);
-                const previousDate = todayInSeconds - (4 * 86400);
-                let result = await contract.getDays(previousDate, todayInSeconds);
-
-                setKeywordsData(result.keywords);
-                let newQuestionsData = [];
-                let newAnswersData = [];
-                let newNoKeywordsData = [];
-                for (let i = 0 ; i < result.questions.length; i++) {
-                    newQuestionsData.push(parseInt((result.questions[i]._hex).toString(16), 16));
-                    newAnswersData.push(parseInt((result.answers[i]._hex).toString(16), 16));
-                    newNoKeywordsData.push(parseInt((result.noKeywords[i]._hex).toString(16), 16));
-                }
-                setQuestionsData(newQuestionsData);
-                setAnswersData(newAnswersData);
-                setNoKeywordsData(newNoKeywordsData);
-            }
-            else {
-                console.log("Ethereum object does not exist");
-            }
+            setKeywordsData(result.keywords);
+            setQuestionsData(result.questions);
+            setAnswersData(result.answers);
+            setNoKeywordsData(result.noKeywords);
         }
         catch(err) {
             console.log(err);
         }
     }
 
-    const connectWalletButton = () => {
-        return (
-        <button onClick={connectWalletHandler} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
-            Connect Wallet
-        </button>
-        )
-    }
-
-    const disconnectWalletButton = () => {
-        return (
-        <button onClick={disconnectWalletHandler} className={`${styles.ctaButton} ${styles.connectWalletButton}`}>
-            Disconnect Wallet
-        </button>
-        )
-    }
-
     const getDataHandler = () => {
         return (
-            <button onClick={getData} className={`${styles.ctaButton} ${styles.orangeButton}`}>
+            <button onClick={getData} className={styles.ctaButton}>
                 Update Graphs
             </button>
         )
     }
 
+    const daysButtons = () => {
+        return (
+            <div className={styles.daysRow}>
+                <button className={styles.daysButton}
+                        style={(days === 5) ? {"backgroundColor" : "rgb(32, 129, 226)", "color": "antiquewhite"} : {}}
+                        onClick={() => { setDays(5); }}>5</button>
+                <button className={styles.daysButton} 
+                        style={(days === 7) ? {"backgroundColor" : "rgb(32, 129, 226)", "color": "antiquewhite"} : {}}
+                        onClick={() => { setDays(7); }}>7</button>
+                <button className={styles.daysButton} 
+                        style={(days === 9) ? {"backgroundColor" : "rgb(32, 129, 226)", "color": "antiquewhite"} : {}}
+                        onClick={() => { setDays(9); }}>9</button>
+            </div>
+        )
+    }
+
     useEffect(() => {
-        checkWalletIsConnected();
         getData();
-        setInterval(() => {
-            (currentAccount) ? getData() : '';
-        }, 5000)
-    }, [])
+    }, [keywordsData, questionsData, answersData, noKeywordsData])
 
     return (
         <div className={styles.mainApp}> 
             <div className={styles.top}>
                 <h1>Graphs Service</h1>
             </div>
-            <div className={styles.row} style={{"position" : "relative", "marginTop": "13%"}}>
-                {currentAccount ? `Wallet Address connected is: ${currentAccount}` : 'No Wallet Address connected.'}
+            <div style={{"marginTop": "130px", "fontSize" : "20px"}}>Get Data for the last N days:</div>
+            <div style={{"marginBottom" : "50px"}}>
+                {daysButtons()}
             </div>
-            <div className={styles.row} style={{"marginTop": "30px"}}>
-                <div className={styles.col}>
-                    {currentAccount ? disconnectWalletButton() : connectWalletButton()}
-                </div>
-                <div className={styles.col}>
-                    {getDataHandler()}
-                </div>
+            <div>
+                {getDataHandler()}
             </div>
             <div className={styles.row}>
                 <div className={styles.col}>
-                    <BarChart key={keywordsData} data={[keywordsData, noKeywordsData]}/>
+                    <BarChart key={keywordsData} data={[keywordsData, noKeywordsData, days]}/>
                 </div>
                 <div className={styles.col}>
                     <LineChart key={questionsData} data={questionsData} title={'Number of Questions'}/>
