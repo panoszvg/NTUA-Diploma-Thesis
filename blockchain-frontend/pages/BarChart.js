@@ -32,15 +32,14 @@ export default (props) => ({
         }
         
         let dataArray = Object.entries(data)
-        let daysNumber = (props.data === undefined) ? 5 : props.data[2];
         dataArray.sort((a, b) => { return b[1] - a[1] });
-        dataArray = dataArray.slice(0, daysNumber);
+        dataArray = dataArray.slice(0, 5);
 
         let labelsArray = [];
         let valuesArray = [];
 
         if (dataArray.length > 1) {
-            for (let i = 0; i < daysNumber; i++) {
+            for (let i = 0; i < 5; i++) {
                 if (dataArray[i] !== undefined) {
                     labelsArray.push(dataArray[i][0]);
                     valuesArray.push(dataArray[i][1]);
