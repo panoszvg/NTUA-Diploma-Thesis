@@ -11,11 +11,8 @@ exports.getQuestion = (req, res, next) => {
     let questionId = req.params.id;
 
     models.Questions.findAll({
-        where: {
-            id: {
-                [Sequelize.Op.eq]: questionId
-            }
-        }
+        limit: 1,
+        offset: (questionId - 1)
     }).then(row => {
         if (row.length == 0) return res.status(404).json({ message: 'Question Not Found.', type: 'error' });
         else {
@@ -23,7 +20,7 @@ exports.getQuestion = (req, res, next) => {
             models.Answers.findAll({
                 where: {
                     QuestionsId: {
-                        [Sequelize.Op.eq]: questionId
+                        [Sequelize.Op.eq]: row[0].id
                     }
                 }
             }).then(rows => {
