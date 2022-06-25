@@ -42,37 +42,42 @@ exports.postAnswer = (req, res, next) => {
 
     if (answerText === '') return res.status(400).json({ message: 'Answer body cannot be empty.', type: 'error' })
 
-    models.Answers.create({
-        text: answerText,
-        dateCreated: Date.now(),
-        QuestionsId: questionId
-    }).then(insertedAnswer => {
+    models.Questions.findAll({
+        limit: 1,
+        offset: (questionId - 1)
+    }).then(row => {
+        models.Answers.create({
+            text: answerText,
+            dateCreated: Date.now(),
+            QuestionsId: row[0].id
+        }).then(insertedAnswer => {
 
-        const { Kafka } = require('kafkajs');
+            const { Kafka } = require('kafkajs');
 
-        const kafka = new Kafka({
-            clientId: "answers",
-            brokers: ['83.212.78.171:9092'],
-        })
-
-        const producer = kafka.producer();
-
-        let kafkaMessage = {
-            answer: answerText,
-            questionId: questionId,
-            answerId: insertedAnswer.id
-        }
-
-        const run = async() => {
-            await producer.connect();
-            await producer.send({
-                topic: "ANSWER",
-                messages: [{ key: messageKey.toString(), value: JSON.stringify(kafkaMessage) }]
+            const kafka = new Kafka({
+                clientId: "answers",
+                brokers: ['83.212.78.171:9092'],
             })
-            messageKey++;
-        }
 
-        run().catch(e => console.error(`[kafka-producer] ${e.message}`, e));
+            const producer = kafka.producer();
+
+            let kafkaMessage = {
+                answer: answerText,
+                questionId: questionId,
+                answerId: insertedAnswer.id
+            }
+
+            const run = async() => {
+                await producer.connect();
+                await producer.send({
+                    topic: "ANSWER",
+                    messages: [{ key: messageKey.toString(), value: JSON.stringify(kafkaMessage) }]
+                })
+                messageKey++;
+            }
+
+            run().then(() => { await producer.disconnect(); }).catch(e => console.error(`[kafka-producer] ${e.message}`, e));
+        })
     })
 
     res.status(200).json({ message: 'OK', type: 'Success' });
