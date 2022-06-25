@@ -76,7 +76,7 @@ exports.postAnswer = (req, res, next) => {
                 messageKey++;
             }
 
-            run().then(() => { await producer.disconnect(); }).catch(e => console.error(`[kafka-producer] ${e.message}`, e));
+            run().then(() => { producer.disconnect(); }).catch(e => console.error(`[kafka-producer] ${e.message}`, e));
         })
     })
 
